@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "kdf": "PBKDF2-SHA256",
+  "iterations": 100000,
+  "saltB64": "B5HeyvV4FO29SzVV90exaw==",
+  "core": {
+    "file": "kb-core.enc",
+    "ivB64": "bAIoVWQLNlfA0zuy",
+    "gzip": true
+  },
+  "shards": {
+    "articles": {
+      "file": "kb-shard-articles.enc",
+      "ivB64": "fgYC/SCu/82Tqwp7",
+      "gzip": true
+    },
+    "talks": {
+      "file": "kb-shard-talks.enc",
+      "ivB64": "e0WVXX3B18IpXFuo",
+      "gzip": true
+    },
+    "chat": {
+      "file": "kb-shard-chat.enc",
+      "ivB64": "bo95zUlZynoVUtez",
+      "gzip": true
+    }
+  },
+  "generatedAt": "2026-11-28 07:24:34 UTC"
+}

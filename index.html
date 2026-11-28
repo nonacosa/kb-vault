@@ -1,0 +1,2891 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>~/kb 个人知识库 · Obsidian 双端阅读器</title>
+<style>
+  :root {
+    --font-sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Segoe UI", Roboto, sans-serif;
+    --font-mono: "SF Mono", ui-monospace, "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --header-h: 54px;
+    --ribbon-h: 46px;
+    --sidebar-w: 280px;
+    --toc-w: 240px;
+  }
+
+  html[data-theme="dark"] {
+    --bg-canvas: #1e1e24;
+    --bg-elevated: #26262f;
+    --bg-surface: #2e2e39;
+    --bg-hover: #363644;
+    --bg-code: #17171d;
+    --border: rgba(255, 255, 255, 0.085);
+    --border-strong: rgba(255, 255, 255, 0.16);
+    --ink-primary: #eceaf4;
+    --ink-secondary: #b0acc2;
+    --ink-muted: #848099;
+    --accent: #a28bff;
+    --accent-strong: #8769ff;
+    --accent-soft: rgba(162, 139, 255, 0.14);
+    --accent-border: rgba(162, 139, 255, 0.34);
+    --star: #f5b84c;
+    --star-soft: rgba(245, 184, 76, 0.13);
+    --ok: #3dd68c;
+    --ok-soft: rgba(61, 214, 140, 0.14);
+    --warn: #f5b84c;
+    --warn-soft: rgba(245, 184, 76, 0.12);
+    --danger: #f87171;
+    --danger-soft: rgba(248, 113, 113, 0.12);
+    --info: #60a5fa;
+    --info-soft: rgba(96, 165, 250, 0.12);
+    --mark-bg: rgba(245, 184, 76, 0.28);
+    --mark-ink: #fff4d6;
+    --shadow-lg: 0 18px 48px rgba(0, 0, 0, 0.48);
+  }
+
+  html[data-theme="light"] {
+    --bg-canvas: #faf8f5;
+    --bg-elevated: #f3efe8;
+    --bg-surface: #ffffff;
+    --bg-hover: #eae4da;
+    --bg-code: #f0ece4;
+    --border: rgba(31, 29, 41, 0.10);
+    --border-strong: rgba(31, 29, 41, 0.18);
+    --ink-primary: #1f1d29;
+    --ink-secondary: #534f63;
+    --ink-muted: #76718a;
+    --accent: #6846e6;
+    --accent-strong: #5534d1;
+    --accent-soft: rgba(104, 70, 230, 0.09);
+    --accent-border: rgba(104, 70, 230, 0.28);
+    --star: #b86c08;
+    --star-soft: rgba(184, 108, 8, 0.10);
+    --ok: #128050;
+    --ok-soft: rgba(18, 128, 80, 0.10);
+    --warn: #b45309;
+    --warn-soft: rgba(180, 83, 9, 0.09);
+    --danger: #c83232;
+    --danger-soft: rgba(200, 50, 50, 0.09);
+    --info: #1d5fc9;
+    --info-soft: rgba(29, 95, 201, 0.09);
+    --mark-bg: rgba(250, 204, 21, 0.40);
+    --mark-ink: #1f1d29;
+    --shadow-lg: 0 18px 48px rgba(31, 29, 41, 0.14);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    background: var(--bg-canvas);
+    color: var(--ink-primary);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  button, input {
+    font: inherit;
+    color: inherit;
+  }
+  button {
+    cursor: pointer;
+    border: none;
+    background: transparent;
+  }
+  a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  a:hover { text-decoration: underline; }
+
+  /* Top Header */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    height: var(--header-h);
+    background: var(--bg-elevated);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 0 14px;
+  }
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    flex: 1;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    flex-shrink: 0;
+    color: var(--ink-primary);
+  }
+  .brand-mark {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent-strong), #5433b8);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 800;
+    box-shadow: 0 2px 8px rgba(104, 70, 230, 0.35);
+  }
+  .topbar-doc-title {
+    display: none;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+  .topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .icon-btn {
+    min-width: 34px;
+    min-height: 34px;
+    padding: 0 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-surface);
+    color: var(--ink-primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 13px;
+    white-space: nowrap;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .icon-btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--border-strong);
+  }
+  .search-trigger {
+    min-width: 210px;
+    justify-content: space-between;
+    color: var(--ink-secondary);
+  }
+  .kbd {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 5px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    color: var(--ink-muted);
+  }
+  .stats-pill {
+    font-size: 12px;
+    color: var(--ink-secondary);
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .mobile-only { display: none; }
+
+  /* Topic Ribbon */
+  .topic-ribbon {
+    position: sticky;
+    top: var(--header-h);
+    z-index: 35;
+    height: var(--ribbon-h);
+    background: var(--bg-canvas);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 14px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .topic-ribbon::-webkit-scrollbar { display: none; }
+  .topic-pill {
+    min-height: 30px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--bg-elevated);
+    color: var(--ink-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.15s ease;
+  }
+  .topic-pill:hover {
+    background: var(--bg-hover);
+    color: var(--ink-primary);
+  }
+  .topic-pill.active {
+    background: var(--accent-soft);
+    border-color: var(--accent-border);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* 3-Column Shell */
+  .shell {
+    display: flex;
+    align-items: stretch;
+    min-height: calc(100vh - var(--header-h) - var(--ribbon-h));
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Left Sidebar */
+  .sidebar-left {
+    width: var(--sidebar-w);
+    flex-shrink: 0;
+    background: var(--bg-elevated);
+    border-right: 1px solid var(--border);
+    position: sticky;
+    top: calc(var(--header-h) + var(--ribbon-h));
+    height: calc(100vh - var(--header-h) - var(--ribbon-h));
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+  }
+  .sidebar-search-box {
+    padding: 10px 10px 8px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .search-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .search-input {
+    width: 100%;
+    min-height: 34px;
+    padding: 6px 32px 6px 30px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-surface);
+    color: var(--ink-primary);
+    font-size: 13px;
+    outline: none;
+  }
+  .search-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-soft);
+  }
+  .search-icon-in {
+    position: absolute;
+    left: 9px;
+    font-size: 13px;
+    color: var(--ink-muted);
+    pointer-events: none;
+  }
+  .clear-btn {
+    position: absolute;
+    right: 3px;
+    min-width: 28px;
+    min-height: 28px;
+    border-radius: 6px;
+    color: var(--ink-muted);
+    font-size: 12px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .clear-btn.visible { display: inline-flex; }
+  .filter-banner {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 5px 8px;
+    border-radius: 7px;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-border);
+    font-size: 12px;
+    color: var(--accent);
+  }
+  .filter-banner.visible { display: flex; }
+  .filter-reset {
+    min-height: 24px;
+    min-width: 44px;
+    padding: 2px 8px;
+    border-radius: 5px;
+    background: var(--bg-surface);
+    color: var(--ink-primary);
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .tree-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
+    padding: 8px 8px calc(120px + env(safe-area-inset-bottom, 20px));
+  }
+
+  /* Tree Items */
+  .tree-section { margin-bottom: 8px; }
+  .tree-section-head {
+    width: 100%;
+    min-height: 30px;
+    padding: 5px 8px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--ink-secondary);
+    letter-spacing: 0.02em;
+    text-align: left;
+  }
+  .tree-section-head:hover { background: var(--bg-hover); color: var(--ink-primary); }
+  .tree-head-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .chev {
+    display: inline-block;
+    width: 14px;
+    text-align: center;
+    font-size: 10px;
+    color: var(--ink-muted);
+    transition: transform 0.14s ease;
+    flex-shrink: 0;
+  }
+  .chev.open { transform: rotate(90deg); }
+  .count-badge {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: var(--bg-surface);
+    color: var(--ink-muted);
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .tree-children {
+    padding-left: 10px;
+    border-left: 1px solid var(--border);
+    margin-left: 12px;
+    margin-top: 2px;
+  }
+  .tree-children.collapsed { display: none; }
+  .tree-folder-btn {
+    width: 100%;
+    min-height: 28px;
+    padding: 4px 6px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-secondary);
+    text-align: left;
+  }
+  .tree-folder-btn:hover { background: var(--bg-hover); color: var(--ink-primary); }
+  .tree-doc-btn {
+    width: 100%;
+    min-height: 30px;
+    padding: 5px 8px;
+    margin: 1px 0;
+    border-radius: 6px;
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--ink-secondary);
+    text-align: left;
+    word-break: break-word;
+  }
+  .tree-doc-btn:hover { background: var(--bg-hover); color: var(--ink-primary); }
+  .tree-doc-btn.active {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .star-dot {
+    color: var(--star);
+    font-size: 12px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .doc-dot {
+    color: var(--ink-muted);
+    font-size: 11px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* Inline Sidebar Search Results */
+  .search-hit {
+    width: 100%;
+    min-height: 44px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-surface);
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .search-hit:hover, .search-hit.active {
+    border-color: var(--accent-border);
+    background: var(--accent-soft);
+  }
+  .search-hit-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink-primary);
+    line-height: 1.35;
+  }
+  .search-hit-meta {
+    font-size: 11px;
+    color: var(--ink-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .search-hit-snippet {
+    font-size: 12px;
+    color: var(--ink-secondary);
+    line-height: 1.45;
+  }
+  mark {
+    background: var(--mark-bg);
+    color: var(--mark-ink);
+    padding: 0 2px;
+    border-radius: 3px;
+  }
+
+  /* Center Reading Area */
+  .main-stage {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    justify-content: center;
+    padding: 24px 32px 64px;
+  }
+  .article-shell {
+    width: 100%;
+    max-width: 76ch;
+    min-width: 0;
+  }
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--ink-muted);
+    margin-bottom: 12px;
+  }
+  .breadcrumb-sep { opacity: 0.5; }
+  .meta-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+    font-size: 12px;
+  }
+  .meta-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 28px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    color: var(--ink-secondary);
+    white-space: nowrap;
+    font-size: 12px;
+  }
+  .meta-chip.star {
+    background: var(--star-soft);
+    border-color: rgba(245, 184, 76, 0.35);
+    color: var(--star);
+    font-weight: 600;
+  }
+  .meta-chip.sync-ok {
+    background: var(--ok-soft);
+    border-color: rgba(61, 214, 140, 0.32);
+    color: var(--ok);
+    font-weight: 600;
+  }
+  .meta-chip.sync-offline {
+    background: var(--bg-surface);
+    color: var(--ink-secondary);
+  }
+  .copy-path-btn {
+    min-height: 28px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    color: var(--ink-primary);
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-left: auto;
+  }
+  .copy-path-btn:hover { background: var(--bg-hover); border-color: var(--accent-border); }
+
+  .frontmatter-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 18px;
+    font-size: 12px;
+    color: var(--ink-secondary);
+  }
+  .fm-tag {
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-family: var(--font-mono);
+  }
+
+  /* Markdown Prose Typography */
+  .prose {
+    font-size: 16px;
+    line-height: 1.78;
+    color: var(--ink-primary);
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+  .prose > *:first-child { margin-top: 0; }
+  .prose h1 {
+    font-size: 1.85em;
+    line-height: 1.28;
+    letter-spacing: -0.02em;
+    margin: 0.2em 0 0.75em;
+    padding-bottom: 0.45em;
+    border-bottom: 1px solid var(--border);
+  }
+  .prose h2 {
+    font-size: 1.38em;
+    line-height: 1.35;
+    margin: 1.7em 0 0.6em;
+    padding-bottom: 0.25em;
+    border-bottom: 1px solid var(--border);
+    scroll-margin-top: calc(var(--header-h) + var(--ribbon-h) + 16px);
+  }
+  .prose h3 {
+    font-size: 1.15em;
+    line-height: 1.4;
+    margin: 1.35em 0 0.45em;
+    color: var(--ink-primary);
+    scroll-margin-top: calc(var(--header-h) + var(--ribbon-h) + 16px);
+  }
+  .prose h4, .prose h5, .prose h6 {
+    font-size: 1em;
+    margin: 1.1em 0 0.4em;
+    color: var(--ink-secondary);
+  }
+  .prose p { margin: 0.8em 0; }
+  .prose ul, .prose ol {
+    margin: 0.7em 0;
+    padding-left: 1.45em;
+  }
+  .prose li { margin: 0.35em 0; }
+  .prose hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 1.6em 0;
+  }
+  .prose blockquote {
+    margin: 1em 0;
+    padding: 0.6em 1em;
+    border-left: 3px solid var(--accent);
+    background: var(--bg-elevated);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    color: var(--ink-secondary);
+  }
+  .prose blockquote p:first-child { margin-top: 0; }
+  .prose blockquote p:last-child { margin-bottom: 0; }
+
+  /* Obsidian Callouts */
+  .callout {
+    margin: 1.1em 0;
+    padding: 12px 15px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    border-left-width: 4px;
+    background: var(--bg-elevated);
+  }
+  .callout-note { border-left-color: var(--info); background: var(--info-soft); }
+  .callout-tip { border-left-color: var(--ok); background: var(--ok-soft); }
+  .callout-important { border-left-color: var(--accent); background: var(--accent-soft); }
+  .callout-warning { border-left-color: var(--warn); background: var(--warn-soft); }
+  .callout-caution { border-left-color: var(--danger); background: var(--danger-soft); }
+  .callout-title {
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .callout-body { font-size: 14.5px; line-height: 1.68; }
+  .callout-body p:first-child { margin-top: 0; }
+  .callout-body p:last-child { margin-bottom: 0; }
+  .callout-body ul, .callout-body ol { margin: 0.4em 0; padding-left: 1.3em; }
+
+  /* Tables */
+  .table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    margin: 1.1em 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-elevated);
+  }
+  .prose table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .prose th, .prose td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+    vertical-align: top;
+  }
+  .prose th {
+    background: var(--bg-surface);
+    font-weight: 700;
+    color: var(--ink-primary);
+    white-space: nowrap;
+  }
+  .prose tr:last-child td { border-bottom: none; }
+
+  /* Code & Inline Code */
+  .prose code {
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+    padding: 2px 6px;
+    border-radius: 5px;
+    background: var(--bg-code);
+    border: 1px solid var(--border);
+    color: var(--accent);
+  }
+  .code-block {
+    margin: 1em 0;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background: var(--bg-code);
+    overflow: hidden;
+  }
+  .code-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 12px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-muted);
+    background: var(--bg-elevated);
+  }
+  .code-copy-btn {
+    min-height: 24px;
+    min-width: 44px;
+    padding: 2px 8px;
+    border-radius: 5px;
+    border: 1px solid var(--border);
+    background: var(--bg-surface);
+    color: var(--ink-secondary);
+    font-size: 11px;
+  }
+  .code-block pre {
+    margin: 0;
+    padding: 12px 14px;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--ink-primary);
+  }
+
+  /* WikiLinks & Images */
+  .wikilink {
+    display: inline;
+    padding: 1px 6px;
+    border-radius: 5px;
+    font-weight: 500;
+    transition: background 0.15s ease;
+  }
+  .wikilink.resolved {
+    background: var(--accent-soft);
+    color: var(--accent);
+    border: 1px solid var(--accent-border);
+  }
+  .wikilink.resolved:hover {
+    background: var(--accent);
+    color: #fff;
+    text-decoration: none;
+  }
+  .wikilink.unresolved {
+    background: var(--bg-elevated);
+    color: var(--ink-muted);
+    border: 1px dashed var(--border-strong);
+    cursor: help;
+  }
+  .md-img-wrap {
+    display: block;
+    margin: 1em 0;
+  }
+  .md-img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg-elevated);
+    cursor: zoom-in;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+  }
+  .md-img:hover {
+    border-color: var(--accent-border);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+  }
+  .md-img-card {
+    margin: 0.9em 0;
+    padding: 9px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px dashed var(--border-strong);
+    background: var(--bg-elevated);
+    font-size: 13px;
+    color: var(--ink-secondary);
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Bottom Backlinks Section */
+  .graph-footer {
+    margin-top: 38px;
+    padding-top: 22px;
+    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .graph-card {
+    min-width: 0;
+    padding: 14px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    background: var(--bg-elevated);
+  }
+  .graph-card h4 {
+    margin: 0 0 10px;
+    font-size: 13px;
+    color: var(--ink-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .link-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .link-card-btn {
+    width: 100%;
+    min-height: 36px;
+    padding: 7px 10px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    background: var(--bg-surface);
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .link-card-btn:hover {
+    border-color: var(--accent-border);
+    background: var(--accent-soft);
+  }
+  .link-card-title { font-size: 13px; font-weight: 600; color: var(--ink-primary); overflow-wrap: anywhere; }
+  .link-card-path { font-size: 11px; color: var(--ink-muted); font-family: var(--font-mono); overflow-wrap: anywhere; }
+
+  /* Right Inspector */
+  .sidebar-right {
+    width: var(--toc-w);
+    flex-shrink: 0;
+    border-left: 1px solid var(--border);
+    background: var(--bg-canvas);
+    position: sticky;
+    top: calc(var(--header-h) + var(--ribbon-h));
+    height: calc(100vh - var(--header-h) - var(--ribbon-h));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding: 18px 14px calc(120px + env(safe-area-inset-bottom, 20px));
+  }
+  .inspector-block { margin-bottom: 22px; }
+  .inspector-title {
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-muted);
+    margin-bottom: 10px;
+  }
+  .toc-list {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .toc-item {
+    display: block;
+    width: 100%;
+    min-height: 28px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    line-height: 1.4;
+    color: var(--ink-secondary);
+    text-align: left;
+  }
+  .toc-item:hover { background: var(--bg-hover); color: var(--ink-primary); }
+  .toc-item.lvl-2 { padding-left: 14px; }
+  .toc-item.lvl-3 { padding-left: 24px; font-size: 12px; color: var(--ink-secondary); opacity: 0.88; }
+  .toc-item.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; border-left: 2px solid var(--accent); }
+  .mini-link-btn {
+    width: 100%;
+    min-height: 28px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    color: var(--ink-secondary);
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .mini-link-btn:hover { background: var(--bg-hover); color: var(--ink-primary); }
+
+  /* Search Modal */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 250;
+    background: rgba(10, 10, 16, 0.62);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 72px 16px 24px;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal-box {
+    width: 100%;
+    max-width: 700px;
+    max-height: 80vh;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .modal-head {
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .modal-filter-bar {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-canvas);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 12.5px;
+    color: var(--ink-secondary);
+  }
+  .modal-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .modal-toggle input {
+    accent-color: var(--accent);
+    width: 15px;
+    height: 15px;
+    cursor: pointer;
+  }
+  .modal-input {
+    flex: 1;
+    min-width: 0;
+    min-height: 38px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-surface);
+    color: var(--ink-primary);
+    font-size: 15px;
+    outline: none;
+  }
+  .modal-input:focus { border-color: var(--accent); }
+  .modal-results {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 12px 14px;
+  }
+  .modal-status {
+    font-size: 12px;
+    color: var(--ink-muted);
+    margin-bottom: 8px;
+    padding: 0 2px;
+  }
+
+  /* Image Lightbox */
+  .lightbox-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    background: rgba(8, 8, 14, 0.88);
+    backdrop-filter: blur(6px);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    gap: 12px;
+  }
+  .lightbox-backdrop.open { display: flex; }
+  .lightbox-close {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .lightbox-close:hover { background: rgba(255, 255, 255, 0.24); }
+  .lightbox-img {
+    max-width: 94vw;
+    max-height: 82vh;
+    object-fit: contain;
+    border-radius: 10px;
+    box-shadow: var(--shadow-lg);
+    background: #111;
+  }
+  .lightbox-caption {
+    color: #e5e3f0;
+    font-size: 13px;
+    text-align: center;
+    max-width: 90vw;
+  }
+
+  /* Online Vault Unlock Screen */
+  .vault-gate {
+    position: fixed;
+    inset: 0;
+    z-index: 400;
+    background: var(--bg-canvas);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .vault-gate.open { display: flex; }
+  .vault-card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-strong);
+    border-radius: 16px;
+    padding: 28px 24px;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .vault-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+  }
+  .vault-desc {
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--ink-secondary);
+  }
+  .vault-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .vault-pwd-row {
+    display: flex;
+    gap: 8px;
+  }
+  .vault-input {
+    flex: 1;
+    min-width: 0;
+    min-height: 42px;
+    padding: 8px 12px;
+    border-radius: 9px;
+    border: 1px solid var(--border-strong);
+    background: var(--bg-surface);
+    color: var(--ink-primary);
+    font-size: 15px;
+    outline: none;
+  }
+  .vault-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-soft);
+  }
+  .vault-submit {
+    min-height: 42px;
+    padding: 8px 16px;
+    border-radius: 9px;
+    background: var(--accent-strong);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .vault-submit:hover { opacity: 0.94; }
+  .vault-submit:disabled { opacity: 0.55; cursor: wait; }
+  .vault-err {
+    font-size: 13px;
+    color: var(--danger);
+    background: var(--danger-soft);
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    border-radius: 8px;
+    padding: 8px 10px;
+    display: none;
+  }
+  .vault-err.visible { display: block; }
+  .vault-status {
+    font-size: 12.5px;
+    color: var(--ink-muted);
+    display: none;
+  }
+  .vault-status.visible { display: block; }
+
+  /* Mobile Bottom Bar & Drawers */
+  .drawer-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 190;
+    background: rgba(0, 0, 0, 0.55);
+    display: none;
+  }
+  .drawer-scrim.open { display: block; }
+  .mobile-bottom-bar { display: none; }
+  .drawer-close-bar { display: none; }
+
+  @media (max-width: 1023px) {
+    .sidebar-right {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: min(300px, 84vw);
+      height: 100vh;
+      height: 100dvh;
+      z-index: 200;
+      transform: translateX(100%);
+      transition: transform 0.2s ease;
+      box-shadow: var(--shadow-lg);
+    }
+    .sidebar-right.drawer-open { transform: translateX(0); }
+    .drawer-close-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+  }
+
+  @media (max-width: 767px) {
+    .desktop-only { display: none !important; }
+    .mobile-only { display: inline-flex; }
+    .topbar-doc-title { display: block; }
+    .brand-text { display: none; }
+    .stats-pill { display: none; }
+    .search-trigger { min-width: 36px; padding: 0 9px; }
+    .sidebar-left {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: min(310px, 86vw);
+      height: 100vh;
+      height: 100dvh;
+      z-index: 200;
+      transform: translateX(-100%);
+      transition: transform 0.2s ease;
+      box-shadow: var(--shadow-lg);
+    }
+    .sidebar-left.drawer-open { transform: translateX(0); }
+    .main-stage { padding: 14px 14px calc(96px + env(safe-area-inset-bottom, 16px)); }
+    .prose { font-size: 15.5px; line-height: 1.72; }
+    .prose h1 { font-size: 1.5em; }
+    .prose h2 { font-size: 1.24em; }
+    .graph-footer { grid-template-columns: 1fr; }
+    .mobile-bottom-bar {
+      position: fixed;
+      left: 10px;
+      right: 10px;
+      bottom: max(10px, env(safe-area-inset-bottom));
+      z-index: 90;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-strong);
+      border-radius: 14px;
+      box-shadow: var(--shadow-lg);
+      padding: 4px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 4px;
+    }
+    .bottom-tab {
+      min-height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--ink-secondary);
+      white-space: nowrap;
+    }
+    .bottom-tab:hover, .bottom-tab.active {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="vault-gate" id="vaultGate" aria-modal="true" role="dialog" aria-label="知识库私密访问">
+    <div class="vault-card">
+      <h1 class="vault-title"><span class="brand-mark">kb</span><span>🔒 个人知识库 · 私密访问</span></h1>
+      <p class="vault-desc">此线上镜像采用浏览器端 AES-256-GCM 全文加密。请输入访问密码在本地解密阅读（密码仅保存在本机浏览器）。</p>
+      <div class="vault-status" id="vaultStatusMsg">⏳ 正在尝试自动解锁并解密核心索引...</div>
+      <form class="vault-form" id="vaultForm" style="display:none;">
+        <div class="vault-pwd-row">
+          <input type="password" class="vault-input" id="vaultPwdInput" placeholder="输入访问密码..." autocomplete="current-password" required />
+          <button type="button" class="icon-btn" id="btnTogglePwd" aria-label="显示或隐藏密码">👁️</button>
+        </div>
+        <button type="submit" class="vault-submit" id="btnUnlockVault">🔓 解锁进入知识库</button>
+      </form>
+      <div class="vault-err" id="vaultErrorMsg"></div>
+    </div>
+  </div>
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <button type="button" class="icon-btn mobile-only" id="btnMobileTree" aria-label="打开目录">☰</button>
+      <a href="#home" class="brand" id="brandHome" title="回到总导航">
+        <span class="brand-mark">kb</span>
+        <span class="brand-text">~/kb 个人知识库</span>
+      </a>
+      <span class="topbar-doc-title" id="topbarDocTitle">个人知识库总导航</span>
+    </div>
+    <div class="topbar-actions">
+      <span class="stats-pill" id="statsPill">加载中...</span>
+      <button type="button" class="icon-btn search-trigger" id="btnOpenSearch" aria-label="全文搜索">
+        <span>🔍 <span class="desktop-only">搜索标题与正文...</span></span>
+        <span class="kbd desktop-only">⌘K</span>
+      </button>
+      <button type="button" class="icon-btn" id="btnTheme" title="切换深色/浅色主题" aria-label="切换主题">🌓 <span class="desktop-only" id="themeLabel">暖纸</span></button>
+      <button type="button" class="icon-btn" id="btnLockVault" title="锁定并清除本机保存的访问密钥" style="display:none;">🔒</button>
+      <button type="button" class="icon-btn mobile-only" id="btnMobileToc" aria-label="打开大纲">📑</button>
+    </div>
+  </header>
+
+  <nav class="topic-ribbon" id="topicRibbon" aria-label="专题快捷入口">
+    <button type="button" class="topic-pill active" data-topic="nav" data-flagship="00-知识库总导航.md">🗺️ 总导航</button>
+    <button type="button" class="topic-pill" data-topic="geo-seo" data-flagship="notes/GEO/AI搜索推荐机制与对比页工程化写法.md">🔥 GEO &amp; SEO 核心</button>
+    <button type="button" class="topic-pill" data-topic="backlinks" data-flagship="notes/外链/从SERP与竞品反链倒推高质量外链.md">🔗 外链增长</button>
+    <button type="button" class="topic-pill" data-topic="monetization" data-flagship="notes/商业化/出海SaaS定价心理、收费墙时机与结账防漏.md">💰 商业化与留存</button>
+    <button type="button" class="topic-pill" data-topic="social" data-flagship="notes/社媒/X平台如何写作爆款帖子.md">🐦 社媒爆款</button>
+    <button type="button" class="topic-pill" data-topic="minigame" data-flagship="notes/小游戏/个人主体单机微信小游戏过审与代备案全攻略.md">🎮 微信小游戏</button>
+    <button type="button" class="topic-pill" data-topic="apply" data-flagship="apply/winklingo/GEO.md">🎯 项目打法卡</button>
+    <button type="button" class="topic-pill" data-topic="sop" data-flagship="sources/gefei/知识库/SOP主线/首页.md">🧭 哥飞 0-1 SOP</button>
+    <button type="button" class="topic-pill" data-topic="talks" data-flagship="sources/gefei-talks/20240615-上海线下聚会/BingNi：一个日入两千美金网站的完整复盘.md">🎤 线下分享</button>
+    <button type="button" class="topic-pill" data-topic="chat" data-flagship="sources/gefei-chat/2026-03/2026-03-11.md">🗨️ 社群群聊</button>
+  </nav>
+
+  <div class="drawer-scrim" id="drawerScrim"></div>
+
+  <div class="shell">
+    <aside class="sidebar-left" id="sidebarLeft" aria-label="知识库目录树">
+      <div class="sidebar-search-box">
+        <div class="drawer-close-bar">
+          <strong style="font-size:13px;">📚 知识库目录</strong>
+          <button type="button" class="icon-btn" id="btnCloseLeft">✕ 关闭</button>
+        </div>
+        <div class="search-input-wrap">
+          <span class="search-icon-in">🔍</span>
+          <input type="text" class="search-input" id="sidebarSearchInput" placeholder="搜标题 / 正文 / 路径 (按 / 聚焦)" aria-label="筛选或搜索文档" />
+          <button type="button" class="clear-btn" id="btnClearSidebarSearch" aria-label="清空搜索">✕</button>
+        </div>
+        <div class="filter-banner" id="filterBanner">
+          <span id="filterBannerText">专题筛选</span>
+          <button type="button" class="filter-reset" id="btnResetFilter">全部</button>
+        </div>
+      </div>
+      <div class="tree-scroll" id="treeContainer"></div>
+    </aside>
+
+    <main class="main-stage" id="mainStage">
+      <article class="article-shell">
+        <div class="breadcrumb" id="breadcrumb"></div>
+        <div class="meta-bar" id="metaBar"></div>
+        <div class="frontmatter-strip" id="frontmatterStrip" style="display:none;"></div>
+        <div class="prose" id="articleContent">
+          <p>正在加载知识库索引...</p>
+        </div>
+        <section class="graph-footer" id="graphFooter"></section>
+      </article>
+    </main>
+
+    <aside class="sidebar-right outline-scroll" id="sidebarRight" aria-label="本页大纲与双链">
+      <div class="drawer-close-bar">
+        <strong style="font-size:13px;">📑 本页大纲与双链</strong>
+        <button type="button" class="icon-btn" id="btnCloseRight">✕ 关闭</button>
+      </div>
+      <div class="inspector-block">
+        <div class="inspector-title">本页目录 (TOC)</div>
+        <div class="toc-list" id="tocContainer"></div>
+      </div>
+      <div class="inspector-block">
+        <div class="inspector-title" id="outlinksTitle">引用笔记 (0)</div>
+        <div id="rightOutlinks"></div>
+      </div>
+      <div class="inspector-block">
+        <div class="inspector-title" id="backlinksTitle">被引用 / 反链 (0)</div>
+        <div id="rightBacklinks"></div>
+      </div>
+    </aside>
+  </div>
+
+  <nav class="mobile-bottom-bar" aria-label="移动端快捷栏">
+    <button type="button" class="bottom-tab" id="mobTabTree">📚 目录</button>
+    <button type="button" class="bottom-tab" id="mobTabGeo">🔥 GEO/SEO</button>
+    <button type="button" class="bottom-tab" id="mobTabSearch">🔍 搜索</button>
+    <button type="button" class="bottom-tab" id="mobTabToc">📑 大纲</button>
+  </nav>
+
+  <div class="modal-backdrop" id="searchModal" role="dialog" aria-modal="true" aria-label="全库即时搜索">
+    <div class="modal-box">
+      <div class="modal-head">
+        <input type="text" class="modal-input" id="modalSearchInput" placeholder="输入关键词搜索全库 1,300+ 篇笔记（例：GEO、外链、程序化SEO、定价、2023年10月）..." />
+        <button type="button" class="icon-btn" id="btnCloseModal">✕ 关闭</button>
+      </div>
+      <div class="modal-filter-bar">
+        <label class="modal-toggle">
+          <input type="checkbox" id="chkIncludeChatTalks" checked />
+          <span>包含群聊 / 线下听写（+575 篇）</span>
+        </label>
+        <span id="modalShardStatus">检索核心库 + 摘要索引</span>
+      </div>
+      <div class="modal-results" id="modalResults"></div>
+    </div>
+  </div>
+
+  <div class="lightbox-backdrop" id="lightboxModal" role="dialog" aria-modal="true" aria-label="查看大图">
+    <button type="button" class="lightbox-close" id="btnCloseLightbox">✕ 关闭</button>
+    <img class="lightbox-img" id="lightboxImg" src="" alt="" />
+    <div class="lightbox-caption" id="lightboxCaption"></div>
+  </div>
+
+<script>window.KB_ONLINE_VAULT = true;</script>
+<script>
+(() => {
+  "use strict";
+
+  const memStore = Object.create(null);
+  function readPref(key, fallback) {
+    try { return window.localStorage.getItem(key) ?? fallback; } catch (_) { return memStore[key] ?? fallback; }
+  }
+  function writePref(key, val) {
+    memStore[key] = val;
+    try { window.localStorage.setItem(key, val); } catch (_) {}
+  }
+  function removePref(key) {
+    delete memStore[key];
+    try { window.localStorage.removeItem(key); } catch (_) {}
+  }
+
+  function applyThemeEarly() {
+    const t = readPref("kb_reader_theme", "dark") === "light" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", t);
+    const lbl = document.getElementById("themeLabel");
+    if (lbl) lbl.textContent = t === "light" ? "暗曜" : "暖纸";
+    return t;
+  }
+  const initialTheme = applyThemeEarly();
+
+  // ---- WebCrypto AES-256-GCM + Gzip Helpers (Online Vault Mode) ----
+  function b64ToBytes(b64) {
+    const norm = String(b64 || "").replace(/-/g, "+").replace(/_/g, "/");
+    const bin = atob(norm);
+    const out = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+
+  async function deriveVaultKey(password, meta) {
+    const enc = new TextEncoder();
+    const keyMaterial = await crypto.subtle.importKey(
+      "raw",
+      enc.encode(password),
+      "PBKDF2",
+      false,
+      ["deriveKey"]
+    );
+    return crypto.subtle.deriveKey(
+      {
+        name: "PBKDF2",
+        salt: b64ToBytes(meta.saltB64),
+        iterations: Number(meta.iterations) || 100000,
+        hash: "SHA-256"
+      },
+      keyMaterial,
+      { name: "AES-GCM", length: 256 },
+      false,
+      ["decrypt"]
+    );
+  }
+
+  async function decryptVaultPayload(aesKey, cipherBuffer, entryMeta) {
+    const iv = b64ToBytes(entryMeta.ivB64);
+    const plainBuf = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, aesKey, cipherBuffer);
+    if (entryMeta.gzip) {
+      if (typeof DecompressionStream === "undefined") {
+        throw new Error("当前浏览器不支持 DecompressionStream，请升级至新版浏览器。");
+      }
+      const stream = new Blob([plainBuf]).stream().pipeThrough(new DecompressionStream("gzip"));
+      return new Response(stream).text();
+    }
+    return new TextDecoder("utf-8").decode(plainBuf);
+  }
+
+  function parseHashKeyAndDoc() {
+    const raw = window.location.hash.replace(/^#/, "");
+    if (!raw) return { key: "", doc: "" };
+    let key = "", doc = "";
+    for (const part of raw.split("&")) {
+      const idx = part.indexOf("=");
+      if (idx < 0) continue;
+      const k = decodeURIComponent(part.slice(0, idx));
+      const v = decodeURIComponent(part.slice(idx + 1));
+      if (k === "key") key = v;
+      else if (k === "doc") doc = v;
+    }
+    return { key, doc };
+  }
+
+  function stripKeyFromHash(docId) {
+    try {
+      const newHash = docId ? `#doc=${encodeURIComponent(docId)}` : "";
+      window.history.replaceState(null, "", window.location.pathname + window.location.search + newHash);
+    } catch (_) {}
+  }
+
+  async function tryFetchVaultMeta() {
+    if (window.location.protocol === "file:") return null;
+    try {
+      const resp = await fetch("./kb-vault-meta.json", { cache: "no-store" });
+      if (!resp.ok) return null;
+      const meta = await resp.json();
+      if (meta && meta.core && meta.core.file) return meta;
+    } catch (_) {}
+    return null;
+  }
+
+  async function unlockVaultFlow(meta) {
+    const gate = document.getElementById("vaultGate");
+    const statusEl = document.getElementById("vaultStatusMsg");
+    const form = document.getElementById("vaultForm");
+    const pwdInput = document.getElementById("vaultPwdInput");
+    const btnTogglePwd = document.getElementById("btnTogglePwd");
+    const btnUnlock = document.getElementById("btnUnlockVault");
+    const errEl = document.getElementById("vaultErrorMsg");
+
+    gate.classList.add("open");
+    const { key: hashKey, doc: hashDoc } = parseHashKeyAndDoc();
+    const savedKey = readPref("kb_vault_key", "");
+
+    btnTogglePwd.addEventListener("click", () => {
+      pwdInput.type = pwdInput.type === "password" ? "text" : "password";
+    });
+
+    async function attemptUnlock(password, fromStorage = false) {
+      errEl.classList.remove("visible");
+      statusEl.classList.add("visible");
+      btnUnlock.disabled = true;
+      try {
+        const aesKey = await deriveVaultKey(password, meta);
+        const coreResp = await fetch(`./${meta.core.file}`, { cache: "no-store" });
+        if (!coreResp.ok) throw new Error(`核心加密包加载失败 (${coreResp.status})`);
+        const cipherBuf = await coreResp.arrayBuffer();
+        const jsonText = await decryptVaultPayload(aesKey, cipherBuf, meta.core);
+        const data = JSON.parse(jsonText);
+        if (!data || !Array.isArray(data.docs)) throw new Error("核心数据格式异常");
+        writePref("kb_vault_key", password);
+        if (hashKey) stripKeyFromHash(hashDoc);
+        window.KB_READER_DATA = data;
+        gate.classList.remove("open");
+        bootReader(data, { isOnline: true, vaultCtx: { meta, aesKey } });
+        return true;
+      } catch (err) {
+        if (fromStorage) removePref("kb_vault_key");
+        statusEl.classList.remove("visible");
+        form.style.display = "flex";
+        errEl.textContent = fromStorage
+          ? "已保存的访问密钥失效，请重新输入密码。"
+          : `解锁失败：${err?.name === "OperationError" ? "密码错误或数据校验失败" : (err?.message || "请检查密码")}`;
+        errEl.classList.add("visible");
+        btnUnlock.disabled = false;
+        requestAnimationFrame(() => pwdInput.focus());
+        return false;
+      }
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const pwd = pwdInput.value;
+      if (!pwd) return;
+      statusEl.textContent = "⏳ 正在派生密钥并解密核心索引...";
+      await attemptUnlock(pwd, false);
+    });
+
+    if (hashKey) {
+      const ok = await attemptUnlock(hashKey, false);
+      if (ok) return;
+    } else if (savedKey) {
+      const ok = await attemptUnlock(savedKey, true);
+      if (ok) return;
+    } else {
+      statusEl.classList.remove("visible");
+      form.style.display = "flex";
+      requestAnimationFrame(() => pwdInput.focus());
+    }
+  }
+
+  function bootReader(DATA, opts = {}) {
+    const isOnlineVault = Boolean(opts.isOnline);
+    const vaultCtx = opts.vaultCtx || null;
+
+    const SHARD_GLOBALS = {
+      articles: "KB_SHARD_ARTICLES",
+      talks: "KB_SHARD_TALKS",
+      chat: "KB_SHARD_CHAT"
+    };
+    const SHARD_FILES = {
+      articles: "kb-shard-articles.js",
+      talks: "kb-shard-talks.js",
+      chat: "kb-shard-chat.js"
+    };
+    const shardPromises = Object.create(null);
+    const hydratedShards = new Set();
+
+    const DOC_MAP = new Map();
+    const REL_MAP = new Map();
+    for (const d of DATA.docs) {
+      DOC_MAP.set(d.id, d);
+      REL_MAP.set(d.relPath, d);
+      d._searchTitle = (d.title || "").toLowerCase();
+      d._searchPath = (d.relPath || "").toLowerCase();
+      d._searchBody = (d.content || "").toLowerCase();
+      d._searchSnippet = (d.snippet || d.summary || "").toLowerCase();
+      d._searchHeadings = (d.toc || []).map(h => h.text).join(" ").toLowerCase();
+    }
+
+    const TOPIC_LABELS = {
+      "nav": "🗺️ 总导航",
+      "geo-seo": "🔥 GEO & SEO 核心",
+      "backlinks": "🔗 外链增长",
+      "monetization": "💰 商业化与留存",
+      "social": "🐦 社媒爆款",
+      "minigame": "🎮 微信小游戏",
+      "apply": "🎯 项目打法卡",
+      "sop": "🧭 哥飞 0-1 SOP",
+      "talks": "🎤 线下分享",
+      "chat": "🗨️ 社群群聊"
+    };
+
+    const initialExpanded = new Set(["sec:nav", "sec:notes", "sec:apply"]);
+    for (const sec of DATA.tree || []) {
+      if (sec.key === "notes" || sec.key === "apply") {
+        for (const ch of sec.children || []) {
+          if (ch.type === "folder") initialExpanded.add(`sec:${sec.key}/${ch.name}`);
+        }
+      }
+    }
+
+    const state = {
+      activeDocId: null,
+      activeTopic: "nav",
+      filterTopicOnly: false,
+      sidebarQuery: "",
+      includeChatTalks: true,
+      expandedFolders: initialExpanded,
+      theme: initialTheme,
+      syncInfo: { mode: "checking", text: "⏳ 检查同步...", ok: false },
+      syncSeq: 0,
+      openSeq: 0,
+      isOnlineVault,
+      vaultCtx
+    };
+
+    const els = {
+      statsPill: document.getElementById("statsPill"),
+      topbarDocTitle: document.getElementById("topbarDocTitle"),
+      btnTheme: document.getElementById("btnTheme"),
+      themeLabel: document.getElementById("themeLabel"),
+      btnLockVault: document.getElementById("btnLockVault"),
+      topicRibbon: document.getElementById("topicRibbon"),
+      sidebarLeft: document.getElementById("sidebarLeft"),
+      sidebarRight: document.getElementById("sidebarRight"),
+      drawerScrim: document.getElementById("drawerScrim"),
+      sidebarSearchInput: document.getElementById("sidebarSearchInput"),
+      btnClearSidebarSearch: document.getElementById("btnClearSidebarSearch"),
+      filterBanner: document.getElementById("filterBanner"),
+      filterBannerText: document.getElementById("filterBannerText"),
+      btnResetFilter: document.getElementById("btnResetFilter"),
+      treeContainer: document.getElementById("treeContainer"),
+      breadcrumb: document.getElementById("breadcrumb"),
+      metaBar: document.getElementById("metaBar"),
+      frontmatterStrip: document.getElementById("frontmatterStrip"),
+      articleContent: document.getElementById("articleContent"),
+      graphFooter: document.getElementById("graphFooter"),
+      tocContainer: document.getElementById("tocContainer"),
+      outlinksTitle: document.getElementById("outlinksTitle"),
+      rightOutlinks: document.getElementById("rightOutlinks"),
+      backlinksTitle: document.getElementById("backlinksTitle"),
+      rightBacklinks: document.getElementById("rightBacklinks"),
+      searchModal: document.getElementById("searchModal"),
+      modalSearchInput: document.getElementById("modalSearchInput"),
+      chkIncludeChatTalks: document.getElementById("chkIncludeChatTalks"),
+      modalShardStatus: document.getElementById("modalShardStatus"),
+      modalResults: document.getElementById("modalResults"),
+      lightboxModal: document.getElementById("lightboxModal"),
+      lightboxImg: document.getElementById("lightboxImg"),
+      lightboxCaption: document.getElementById("lightboxCaption")
+    };
+
+    if (isOnlineVault && els.btnLockVault) {
+      els.btnLockVault.style.display = "inline-flex";
+      els.btnLockVault.addEventListener("click", () => {
+        removePref("kb_vault_key");
+        window.location.reload();
+      });
+    }
+
+    function escHtml(str) {
+      return String(str ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    function applyTheme(theme) {
+      state.theme = theme === "light" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", state.theme);
+      els.themeLabel.textContent = state.theme === "light" ? "暗曜" : "暖纸";
+      writePref("kb_reader_theme", state.theme);
+    }
+
+    function closeDrawers() {
+      els.sidebarLeft.classList.remove("drawer-open");
+      els.sidebarRight.classList.remove("drawer-open");
+      els.drawerScrim.classList.remove("open");
+    }
+    function openLeftDrawer() {
+      closeDrawers();
+      els.sidebarLeft.classList.add("drawer-open");
+      els.drawerScrim.classList.add("open");
+    }
+    function openRightDrawer() {
+      closeDrawers();
+      els.sidebarRight.classList.add("drawer-open");
+      els.drawerScrim.classList.add("open");
+    }
+
+    function openLightbox(src, alt) {
+      if (!src) return;
+      els.lightboxImg.src = src;
+      els.lightboxImg.alt = alt || "";
+      els.lightboxCaption.textContent = alt || "";
+      els.lightboxModal.classList.add("open");
+    }
+    function closeLightbox() {
+      els.lightboxModal.classList.remove("open");
+      els.lightboxImg.src = "";
+    }
+
+    function hydrateShard(shardName, shardMap) {
+      if (!shardMap || hydratedShards.has(shardName)) return;
+      for (const d of DATA.docs) {
+        if (d.shard === shardName && Object.prototype.hasOwnProperty.call(shardMap, d.id)) {
+          d.content = shardMap[d.id];
+          d._searchBody = d.content.toLowerCase();
+        }
+      }
+      hydratedShards.add(shardName);
+    }
+
+    async function ensureShardLoaded(shardName) {
+      if (!shardName || !SHARD_GLOBALS[shardName]) return;
+      const globalVar = SHARD_GLOBALS[shardName];
+      if (window[globalVar]) {
+        hydrateShard(shardName, window[globalVar]);
+        return;
+      }
+      if (shardPromises[shardName]) return shardPromises[shardName];
+
+      shardPromises[shardName] = (async () => {
+        if (state.isOnlineVault && state.vaultCtx) {
+          const sMeta = state.vaultCtx.meta?.shards?.[shardName];
+          if (!sMeta || !sMeta.file) throw new Error(`未找到分片元数据: ${shardName}`);
+          const resp = await fetch(`./${sMeta.file}`, { cache: "no-store" });
+          if (!resp.ok) throw new Error(`分片请求失败 (${resp.status})`);
+          const buf = await resp.arrayBuffer();
+          const jsonText = await decryptVaultPayload(state.vaultCtx.aesKey, buf, sMeta);
+          window[globalVar] = JSON.parse(jsonText);
+        } else {
+          await new Promise((resolve, reject) => {
+            const s = document.createElement("script");
+            s.src = `./${SHARD_FILES[shardName]}`;
+            s.async = true;
+            s.onload = () => resolve();
+            s.onerror = () => reject(new Error(`加载分片脚本失败: ${SHARD_FILES[shardName]}`));
+            document.head.appendChild(s);
+          });
+        }
+        hydrateShard(shardName, window[globalVar]);
+      })().catch((err) => {
+        delete shardPromises[shardName];
+        throw err;
+      });
+
+      return shardPromises[shardName];
+    }
+
+    function slugifyHeading(text) {
+      const cleaned = String(text || "")
+        .replace(/[`*_~]+/g, "")
+        .replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, t, a) => a || t)
+        .replace(/[^\w\u4e00-\u9fff\- ]+/g, "")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "-");
+      return cleaned || "section";
+    }
+
+    function parseLiveFrontmatter(raw) {
+      const m = raw.match(/^---\s*\n([\s\S]*?)\n---\s*(?:\n|$)/);
+      if (!m) return { meta: {}, body: raw };
+      const block = m[1];
+      const body = raw.slice(m[0].length);
+      const meta = {};
+      let curList = null;
+      for (const line of block.split(/\r?\n/)) {
+        const s = line.trim();
+        if (!s || s.startsWith("#")) continue;
+        if (s.startsWith("- ") && curList) {
+          const v = s.slice(2).trim().replace(/^['"]|['"]$/g, "");
+          if (v) meta[curList].push(v);
+          continue;
+        }
+        curList = null;
+        const idx = line.indexOf(":");
+        if (idx > 0) {
+          const k = line.slice(0, idx).trim();
+          const v = line.slice(idx + 1).trim().replace(/^['"]|['"]$/g, "");
+          if (!v) {
+            curList = k;
+            meta[k] = [];
+          } else {
+            meta[k] = v;
+          }
+        }
+      }
+      return { meta, body };
+    }
+
+    function extractLiveToc(body) {
+      const toc = [];
+      const counts = Object.create(null);
+      let inFence = false;
+      for (const line of body.split(/\r?\n/)) {
+        const s = line.trim();
+        if (s.startsWith("```") || s.startsWith("~~~")) {
+          inFence = !inFence;
+          continue;
+        }
+        if (inFence) continue;
+        const hm = s.match(/^(#{1,3})\s+(.+?)\s*$/);
+        if (hm) {
+          const level = hm[1].length;
+          const clean = hm[2]
+            .replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, t, a) => a || t)
+            .replace(/[`*_]+/g, "")
+            .trim();
+          const base = slugifyHeading(clean);
+          counts[base] = (counts[base] || 0) + 1;
+          const slug = counts[base] === 1 ? base : `${base}-${counts[base]}`;
+          toc.push({ level, text: clean, slug });
+        }
+      }
+      return toc;
+    }
+
+    function resolveWikiTarget(doc, rawInner) {
+      const parts = rawInner.split("|");
+      const targetPart = (parts[0] || "").trim();
+      const alias = (parts[1] || "").trim();
+      const hashIdx = targetPart.indexOf("#");
+      const target = (hashIdx >= 0 ? targetPart.slice(0, hashIdx) : targetPart).trim();
+      const anchor = (hashIdx >= 0 ? targetPart.slice(hashIdx + 1) : "").trim();
+      const label = alias || (anchor ? `${target} › ${anchor}` : target);
+
+      let targetId = null;
+      if (doc && Array.isArray(doc.outLinks)) {
+        const pre = doc.outLinks.find(l => l.raw === rawInner.trim() && l.docId);
+        if (pre) targetId = pre.docId;
+      }
+      if (!targetId && DATA.linkIndex) {
+        const cleanT = target.endsWith(".md") ? target.slice(0, -3) : target;
+        targetId = DATA.linkIndex[cleanT.toLowerCase()] || DATA.linkIndex[target.toLowerCase()] || null;
+      }
+      if (!targetId) {
+        const cleanT = (target.endsWith(".md") ? target.slice(0, -3) : target).toLowerCase();
+        for (const d of DATA.docs) {
+          const noExt = d._searchPath.endsWith(".md") ? d._searchPath.slice(0, -3) : d._searchPath;
+          if (noExt === cleanT || noExt.endsWith("/" + cleanT) || d.stem.toLowerCase() === cleanT || d._searchTitle === cleanT) {
+            targetId = d.id;
+            break;
+          }
+        }
+      }
+      return { targetId, anchor, label };
+    }
+
+    function resolveImageUrl(doc, rawSrc) {
+      const info = doc && doc.images && doc.images[rawSrc];
+      if (!info) return null;
+      if (state.isOnlineVault) {
+        return `./assets/${info.hashFile}.enc`;
+      }
+      if (window.location.protocol === "file:") {
+        return `file:///Volumes/WorkData/kb-data/assets/gefei/${info.assetRel.split("/").map(encodeURIComponent).join("/")}`;
+      }
+      return `/api/asset?path=${encodeURIComponent(info.assetRel)}`;
+    }
+
+    function renderImageHtml(rawSrc, altRaw, doc) {
+      const cleanSrc = String(rawSrc || "").trim().split(/\s+/)[0];
+      const name = String(altRaw || "").trim() || cleanSrc.split("/").pop() || "配图";
+      if (cleanSrc.startsWith("data:")) {
+        return `<span class="md-img-wrap"><img class="md-img" src="${escHtml(cleanSrc)}" alt="${escHtml(name)}" data-lightbox-src="${escHtml(cleanSrc)}" data-lightbox-alt="${escHtml(name)}" /></span>`;
+      }
+      if (/^https?:\/\//i.test(cleanSrc)) {
+        return `<span class="md-img-wrap"><img class="md-img" src="${escHtml(cleanSrc)}" alt="${escHtml(name)}" referrerpolicy="no-referrer" data-lightbox-src="${escHtml(cleanSrc)}" data-lightbox-alt="${escHtml(name)}" data-fallback-name="${escHtml(name)}" data-fallback-src="${escHtml(cleanSrc)}" /></span>`;
+      }
+      const mappedUrl = resolveImageUrl(doc, cleanSrc);
+      if (mappedUrl) {
+        if (state.isOnlineVault) {
+          return `<span class="md-img-wrap"><img class="md-img" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-enc-asset="${escHtml(mappedUrl)}" alt="${escHtml(name)}" decoding="async" data-lightbox-src="" data-lightbox-alt="${escHtml(name)}" /></span>`;
+        }
+        return `<span class="md-img-wrap"><img class="md-img" src="${escHtml(mappedUrl)}" alt="${escHtml(name)}" decoding="async" data-lightbox-src="${escHtml(mappedUrl)}" data-lightbox-alt="${escHtml(name)}" data-fallback-name="${escHtml(name)}" data-fallback-src="${escHtml(cleanSrc)}" /></span>`;
+      }
+      return `<span class="md-img-card">🖼️ 原文配图：<strong>${escHtml(name)}</strong> <span style="opacity:.7;font-family:var(--font-mono);font-size:11px;">(${escHtml(cleanSrc)})</span></span>`;
+    }
+
+    function renderInline(text, doc) {
+      const codeTokens = [];
+      let str = String(text ?? "").replace(/`([^`\n]+)`/g, (_, code) => {
+        const idx = codeTokens.length;
+        codeTokens.push(`<code>${escHtml(code)}</code>`);
+        return `\u0000CODE${idx}\u0000`;
+      });
+
+      const specialTokens = [];
+      // Obsidian Wiki Image embeds: ![[images/xxx.png]] or ![[images/xxx.png|600]]
+      str = str.replace(/!\[\[([^\]\n]+)\]\]/g, (_, inner) => {
+        const idx = specialTokens.length;
+        const parts = inner.split("|");
+        const rawSrc = (parts[0] || "").trim();
+        const maybeAlt = (parts[1] || "").trim();
+        const alt = /^\d+(x\d+)?$/.test(maybeAlt) ? "" : maybeAlt;
+        specialTokens.push(renderImageHtml(rawSrc, alt, doc));
+        return `\u0000TOK${idx}\u0000`;
+      });
+
+      // Standard Markdown images: ![alt](src)
+      str = str.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, src) => {
+        const idx = specialTokens.length;
+        specialTokens.push(renderImageHtml(src, alt, doc));
+        return `\u0000TOK${idx}\u0000`;
+      });
+
+      // WikiLinks [[target|alias]]
+      str = str.replace(/(?<!!)\[\[([^\]\n]+)\]\]/g, (_, inner) => {
+        const idx = specialTokens.length;
+        const { targetId, anchor, label } = resolveWikiTarget(doc, inner);
+        if (targetId && DOC_MAP.has(targetId)) {
+          specialTokens.push(
+            `<a href="#doc=${escHtml(targetId)}" class="wikilink resolved" data-doc-id="${escHtml(targetId)}" data-anchor="${escHtml(anchor)}">${escHtml(label)}</a>`
+          );
+        } else {
+          specialTokens.push(
+            `<span class="wikilink unresolved" title="未收录于当前阅读器索引（可能位于外部目录或待补充）">${escHtml(label)}</span>`
+          );
+        }
+        return `\u0000TOK${idx}\u0000`;
+      });
+
+      // Standard Markdown links [label](url)
+      str = str.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, label, url) => {
+        const idx = specialTokens.length;
+        const u = url.trim();
+        if (/^(https?:|mailto:|#)/i.test(u)) {
+          specialTokens.push(`<a href="${escHtml(u)}" target="_blank" rel="noopener noreferrer">${escHtml(label)}</a>`);
+        } else {
+          specialTokens.push(`<span class="wikilink unresolved" title="${escHtml(u)}">${escHtml(label)}</span>`);
+        }
+        return `\u0000TOK${idx}\u0000`;
+      });
+
+      // Auto-link bare http/https URLs (common in chat transcripts)
+      str = str.replace(/https?:\/\/[^\s<>)\]"'，。；！？、\u0000]+/g, (url) => {
+        const idx = specialTokens.length;
+        specialTokens.push(`<a href="${escHtml(url)}" target="_blank" rel="noopener noreferrer">${escHtml(url)}</a>`);
+        return `\u0000TOK${idx}\u0000`;
+      });
+
+      str = escHtml(str);
+      str = str.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+      str = str.replace(/~~([^~]+)~~/g, "<del>$1</del>");
+      str = str.replace(/(^|[^*])\*([^*\n]+)\*/g, "$1<em>$2</em>");
+
+      str = str.replace(/\u0000TOK(\d+)\u0000/g, (_, i) => specialTokens[Number(i)]);
+      str = str.replace(/\u0000CODE(\d+)\u0000/g, (_, i) => codeTokens[Number(i)]);
+      return str;
+    }
+
+    function renderBlocks(mdText, doc, slugCounts) {
+      const lines = String(mdText || "").replace(/\r\n/g, "\n").split("\n");
+      const html = [];
+      let i = 0;
+
+      const isTableSep = (line) => /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)+\|?\s*$/.test(line);
+      const splitRow = (line) => {
+        let s = line.trim();
+        if (s.startsWith("|")) s = s.slice(1);
+        if (s.endsWith("|")) s = s.slice(0, -1);
+        return s.split("|").map(c => c.trim());
+      };
+
+      while (i < lines.length) {
+        const line = lines[i];
+        const trimmed = line.trim();
+
+        if (!trimmed) { i++; continue; }
+
+        const fenceMatch = trimmed.match(/^(```+|~~~+)\s*([^\s]*)/);
+        if (fenceMatch) {
+          const fence = fenceMatch[1][0].repeat(fenceMatch[1].length);
+          const lang = fenceMatch[2] || "text";
+          const codeLines = [];
+          i++;
+          while (i < lines.length && !lines[i].trim().startsWith(fence)) {
+            codeLines.push(lines[i]);
+            i++;
+          }
+          i++;
+          html.push(`<div class="code-block"><div class="code-head"><span>${escHtml(lang)}</span><button type="button" class="code-copy-btn">复制</button></div><pre><code>${escHtml(codeLines.join("\n"))}</code></pre></div>`);
+          continue;
+        }
+
+        const hMatch = trimmed.match(/^(#{1,6})\s+(.+?)\s*$/);
+        if (hMatch) {
+          const level = hMatch[1].length;
+          const rawText = hMatch[2];
+          const cleanForSlug = rawText.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, t, a) => a || t).replace(/[`*_]+/g, "").trim();
+          let idAttr = "";
+          if (level <= 3) {
+            const base = slugifyHeading(cleanForSlug);
+            slugCounts[base] = (slugCounts[base] || 0) + 1;
+            const slug = slugCounts[base] === 1 ? base : `${base}-${slugCounts[base]}`;
+            idAttr = ` id="${escHtml(slug)}" data-toc-slug="${escHtml(slug)}"`;
+          }
+          html.push(`<h${level}${idAttr}>${renderInline(rawText, doc)}</h${level}>`);
+          i++;
+          continue;
+        }
+
+        if (/^([-*_])\1{2,}$/.test(trimmed)) {
+          html.push("<hr />");
+          i++;
+          continue;
+        }
+
+        if (trimmed.startsWith(">")) {
+          const bqLines = [];
+          while (i < lines.length && lines[i].trim().startsWith(">")) {
+            bqLines.push(lines[i].replace(/^\s*>\s?/, ""));
+            i++;
+          }
+          const first = (bqLines[0] || "").trim();
+          const calloutMatch = first.match(/^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION|INFO)\]\s*(.*)$/i);
+          if (calloutMatch) {
+            const cType = calloutMatch[1].toLowerCase();
+            const normalized = cType === "info" ? "note" : cType;
+            const icons = { note: "ℹ️", tip: "💡", important: "🧭", warning: "⚠️", caution: "🛑" };
+            const defaultTitles = { note: "说明", tip: "建议", important: "重点导读", warning: "注意", caution: "警告" };
+            const titleText = calloutMatch[2].trim() || defaultTitles[normalized] || normalized.toUpperCase();
+            const bodyHtml = renderBlocks(bqLines.slice(1).join("\n"), doc, slugCounts);
+            html.push(`<div class="callout callout-${escHtml(normalized)}"><div class="callout-title">${icons[normalized] || "📌"} <span>${renderInline(titleText, doc)}</span></div><div class="callout-body">${bodyHtml}</div></div>`);
+          } else {
+            html.push(`<blockquote>${renderBlocks(bqLines.join("\n"), doc, slugCounts)}</blockquote>`);
+          }
+          continue;
+        }
+
+        if (line.includes("|") && i + 1 < lines.length && isTableSep(lines[i + 1])) {
+          const headers = splitRow(line);
+          i += 2;
+          const rows = [];
+          while (i < lines.length && lines[i].trim().includes("|") && !lines[i].trim().startsWith("```")) {
+            rows.push(splitRow(lines[i]));
+            i++;
+          }
+          const ths = headers.map(h => `<th>${renderInline(h, doc)}</th>`).join("");
+          const trs = rows.map(r => `<tr>${headers.map((_, ci) => `<td>${renderInline(r[ci] || "", doc)}</td>`).join("")}</tr>`).join("");
+          html.push(`<div class="table-wrap"><table><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table></div>`);
+          continue;
+        }
+
+        const ulMatch = line.match(/^(\s*)([-*+])\s+(.*)$/);
+        const olMatch = line.match(/^(\s*)(\d+)\.\s+(.*)$/);
+        if (ulMatch || olMatch) {
+          const isOrdered = Boolean(olMatch);
+          const items = [];
+          while (i < lines.length) {
+            const l = lines[i];
+            const m = isOrdered ? l.match(/^\s*(\d+)\.\s+(.*)$/) : l.match(/^\s*([-*+])\s+(.*)$/);
+            if (!m) break;
+            let itemText = m[2];
+            i++;
+            while (i < lines.length) {
+              const nxt = lines[i];
+              if (!nxt.trim()) break;
+              if (/^\s*([-*+]|\d+\.)\s+/.test(nxt) || /^(#{1,6}\s|>|```|\|)/.test(nxt.trim())) break;
+              itemText += " " + nxt.trim();
+              i++;
+            }
+            const taskMatch = itemText.match(/^\[( |x|X)\]\s+(.*)$/);
+            if (taskMatch) {
+              const checked = taskMatch[1].toLowerCase() === "x";
+              items.push(`<li style="list-style:none;margin-left:-1.1em;">${checked ? "☑" : "☐"} ${renderInline(taskMatch[2], doc)}</li>`);
+            } else {
+              items.push(`<li>${renderInline(itemText, doc)}</li>`);
+            }
+          }
+          const tag = isOrdered ? "ol" : "ul";
+          html.push(`<${tag}>${items.join("")}</${tag}>`);
+          continue;
+        }
+
+        const paraLines = [];
+        while (i < lines.length) {
+          const l = lines[i];
+          const t = l.trim();
+          if (!t || /^(#{1,6}\s|>|```|~~~|[-*_]{3,}$)/.test(t)) break;
+          if (/^\s*([-*+]|\d+\.)\s+/.test(l)) break;
+          if (l.includes("|") && i + 1 < lines.length && isTableSep(lines[i + 1])) break;
+          paraLines.push(t);
+          i++;
+        }
+        if (paraLines.length) {
+          html.push(`<p>${renderInline(paraLines.join(" "), doc)}</p>`);
+        }
+      }
+      return html.join("\n");
+    }
+
+    function renderMarkdown(mdText, doc) {
+      return renderBlocks(mdText, doc, Object.create(null));
+    }
+
+    function buildSnippet(doc, queryLower, tokens) {
+      const body = String(doc.content || doc.snippet || doc.summary || "").replace(/\s+/g, " ").trim();
+      const lower = body.toLowerCase();
+      let idx = lower.indexOf(queryLower);
+      if (idx < 0 && tokens.length) {
+        for (const tk of tokens) {
+          const p = lower.indexOf(tk);
+          if (p >= 0) { idx = p; break; }
+        }
+      }
+      let slice = "";
+      if (idx < 0) {
+        slice = doc.summary || body.slice(0, 110);
+      } else {
+        const start = Math.max(0, idx - 35);
+        const end = Math.min(body.length, idx + 85);
+        slice = (start > 0 ? "…" : "") + body.slice(start, end) + (end < body.length ? "…" : "");
+      }
+      let escaped = escHtml(slice);
+      const hlTerms = Array.from(new Set([queryLower, ...tokens])).filter(t => t.length >= 1).sort((a, b) => b.length - a.length);
+      for (const term of hlTerms) {
+        const safeRe = new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
+        escaped = escaped.replace(safeRe, m => `<mark>${m}</mark>`);
+      }
+      return escaped;
+    }
+
+    function searchDocs(rawQuery, limit = 40, includeChatTalks = true) {
+      const q = String(rawQuery || "").trim().toLowerCase();
+      if (!q) return [];
+      const spaced = q.replace(/([\u4e00-\u9fff])([a-z0-9])/gi, "$1 $2").replace(/([a-z0-9])([\u4e00-\u9fff])/gi, "$1 $2");
+      const tokens = spaced.split(/[\s+/]+/).filter(Boolean);
+      const results = [];
+
+      for (const d of DATA.docs) {
+        if (!includeChatTalks && (d.group === "chat" || d.group === "talks")) continue;
+        if (state.filterTopicOnly && state.activeTopic !== "nav" && !(d.topics || []).includes(state.activeTopic)) {
+          continue;
+        }
+        const bodyHay = d._searchBody || d._searchSnippet;
+        let score = 0;
+        const inTitle = d._searchTitle.includes(q);
+        const inHead = d._searchHeadings.includes(q);
+        const inPath = d._searchPath.includes(q);
+        const inBody = bodyHay.includes(q);
+
+        let tokenHits = 0;
+        for (const tk of tokens) {
+          if (d._searchTitle.includes(tk) || d._searchHeadings.includes(tk) || bodyHay.includes(tk) || d._searchPath.includes(tk)) {
+            tokenHits++;
+          }
+        }
+        if (!inTitle && !inHead && !inPath && !inBody && tokenHits < tokens.length) continue;
+
+        if (d._searchTitle === q) score += 120;
+        if (inTitle) score += 60;
+        if (inHead) score += 25;
+        if (inPath) score += 16;
+        if (inBody) score += 12;
+        score += tokenHits * 15;
+        if (d.group === "nav") score += 28;
+        else if (d.group === "notes") score += 26;
+        else if (d.group === "apply") score += 20;
+        else if (d.group === "gefei") score += 10;
+        else if (d.group === "articles") score += 8;
+        else if (d.group === "chat") score -= 4;
+        if (d.relPath.includes("/概念卡片/") || d.relPath.includes("/操作指南/")) score += 6;
+
+        results.push({ doc: d, score, snippetHtml: buildSnippet(d, q, tokens) });
+      }
+
+      results.sort((a, b) => b.score - a.score || (a.doc.isStarred === b.doc.isStarred ? 0 : a.doc.isStarred ? -1 : 1));
+      return results.slice(0, limit);
+    }
+
+    function nodeMatchesTopic(node) {
+      if (!state.filterTopicOnly || state.activeTopic === "nav") return true;
+      if (node.type === "doc") {
+        const doc = DOC_MAP.get(node.id);
+        return doc && (doc.topics || []).includes(state.activeTopic);
+      }
+      return (node.children || []).some(nodeMatchesTopic);
+    }
+
+    function renderTree() {
+      const q = state.sidebarQuery.trim();
+      els.btnClearSidebarSearch.classList.toggle("visible", q.length > 0);
+
+      if (state.filterTopicOnly && state.activeTopic !== "nav") {
+        els.filterBanner.classList.add("visible");
+        els.filterBannerText.textContent = `筛选：${TOPIC_LABELS[state.activeTopic] || state.activeTopic}`;
+      } else {
+        els.filterBanner.classList.remove("visible");
+      }
+
+      if (q) {
+        const hits = searchDocs(q, 50, true);
+        if (!hits.length) {
+          els.treeContainer.innerHTML = `<div style="padding:18px 10px;text-align:center;color:var(--ink-muted);font-size:13px;">未找到「${escHtml(q)}」相关笔记<br/><span style="font-size:12px;">可点「全部」取消专题筛选或换个关键词</span></div>`;
+          return;
+        }
+        els.treeContainer.innerHTML =
+          `<div style="font-size:11.5px;color:var(--ink-muted);padding:2px 4px 8px;">找到 ${hits.length} 篇相关笔记</div>` +
+          hits.map(({ doc, snippetHtml }) => `
+            <button type="button" class="search-hit ${doc.id === state.activeDocId ? "active" : ""}" data-doc-id="${escHtml(doc.id)}">
+              <div class="search-hit-title">${doc.isStarred ? "★ " : ""}${escHtml(doc.title)}</div>
+              <div class="search-hit-meta"><span>${escHtml(doc.section)}</span><span>·</span><span>${escHtml(doc.relPath)}</span></div>
+              <div class="search-hit-snippet">${snippetHtml}</div>
+            </button>
+          `).join("");
+        return;
+      }
+
+      const parts = [];
+      const renderNode = (node, prefixKey) => {
+        if (!nodeMatchesTopic(node)) return "";
+        if (node.type === "doc") {
+          const active = node.id === state.activeDocId ? "active" : "";
+          const icon = node.isStarred ? '<span class="star-dot">★</span>' : '<span class="doc-dot">•</span>';
+          return `<button type="button" class="tree-doc-btn ${active}" data-doc-id="${escHtml(node.id)}">${icon}<span>${escHtml(node.name)}</span></button>`;
+        }
+        const fKey = `${prefixKey}/${node.name}`;
+        const isOpen = state.filterTopicOnly || state.expandedFolders.has(fKey);
+        const childrenHtml = (node.children || []).map(c => renderNode(c, fKey)).join("");
+        if (!childrenHtml) return "";
+        return `
+          <div>
+            <button type="button" class="tree-folder-btn" data-folder-key="${escHtml(fKey)}">
+              <span class="tree-head-left"><span class="chev ${isOpen ? "open" : ""}">▸</span><span>📁 ${escHtml(node.name)}</span></span>
+              <span class="count-badge">${node.count}</span>
+            </button>
+            <div class="tree-children ${isOpen ? "" : "collapsed"}">${childrenHtml}</div>
+          </div>
+        `;
+      };
+
+      for (const sec of DATA.tree) {
+        if (state.filterTopicOnly && state.activeTopic !== "nav" && !sec.children.some(nodeMatchesTopic)) continue;
+        const sKey = `sec:${sec.key}`;
+        const isOpen = state.filterTopicOnly || state.expandedFolders.has(sKey) || (!sec.collapsed && !state.expandedFolders.has(`closed:${sec.key}`));
+        const inner = sec.children.map(c => renderNode(c, sKey)).join("");
+        if (!inner) continue;
+        parts.push(`
+          <div class="tree-section">
+            <button type="button" class="tree-section-head" data-sec-key="${escHtml(sec.key)}">
+              <span class="tree-head-left"><span class="chev ${isOpen ? "open" : ""}">▸</span><span>${escHtml(sec.title)}</span></span>
+              <span class="count-badge">${sec.count}</span>
+            </button>
+            <div class="tree-children ${isOpen ? "" : "collapsed"}">${inner}</div>
+          </div>
+        `);
+      }
+      els.treeContainer.innerHTML = parts.join("");
+    }
+
+    function expandAncestorsForDoc(doc) {
+      state.expandedFolders.add(`sec:${doc.group}`);
+      state.expandedFolders.delete(`closed:${doc.group}`);
+
+      function findPath(nodes, prefixKey, targetId) {
+        for (const node of nodes || []) {
+          if (node.type === "doc" && node.id === targetId) return [];
+          if (node.type === "folder") {
+            const fKey = `${prefixKey}/${node.name}`;
+            const sub = findPath(node.children, fKey, targetId);
+            if (sub) return [fKey, ...sub];
+          }
+        }
+        return null;
+      }
+
+      const sec = (DATA.tree || []).find(s => s.key === doc.group);
+      if (sec) {
+        const folderKeys = findPath(sec.children, `sec:${sec.key}`, doc.id);
+        if (folderKeys) {
+          for (const fk of folderKeys) state.expandedFolders.add(fk);
+        }
+      }
+    }
+
+    function renderMetaBar(doc) {
+      const syncClass = state.syncInfo.ok ? "sync-ok" : "sync-offline";
+      const starBadge = doc.isStarred ? `<span class="meta-chip star">★ 实战精华</span>` : "";
+      const cleanSection = String(doc.section || "").replace(/^★\s*/, "");
+      const fullDiskPath = `${DATA.kbRoot}/${doc.relPath}`;
+      els.metaBar.innerHTML = `
+        ${starBadge}
+        <span class="meta-chip">📂 ${escHtml(cleanSection)}</span>
+        <span class="meta-chip">📝 ${doc.wordCount.toLocaleString()} 字 · 约 ${doc.readMins} 分钟</span>
+        <button type="button" class="meta-chip ${syncClass}" id="btnCheckSync" title="同源 HTTP 服务下自动比对磁盘；在线加密版按需解密分片">${escHtml(state.syncInfo.text)}</button>
+        <button type="button" class="copy-path-btn" id="btnCopyPath" data-path="${escHtml(fullDiskPath)}">📋 复制路径</button>
+      `;
+      const btnCheck = document.getElementById("btnCheckSync");
+      if (btnCheck) btnCheck.addEventListener("click", () => checkLiveSync(doc, true));
+      const btnCopy = document.getElementById("btnCopyPath");
+      if (btnCopy) {
+        btnCopy.addEventListener("click", () => {
+          copyText(fullDiskPath);
+          btnCopy.textContent = "✅ 已复制路径";
+          setTimeout(() => { btnCopy.textContent = "📋 复制路径"; }, 1800);
+        });
+      }
+    }
+
+    function copyText(text) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+      } else {
+        fallbackCopy(text);
+      }
+    }
+    function fallbackCopy(text) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); } catch (_) {}
+      ta.remove();
+    }
+
+    function renderFrontmatter(meta) {
+      const keys = Object.keys(meta || {});
+      if (!keys.length) {
+        els.frontmatterStrip.style.display = "none";
+        els.frontmatterStrip.innerHTML = "";
+        return;
+      }
+      const items = [];
+      if (meta.published) items.push(`<span>📅 发布：${escHtml(meta.published)}</span>`);
+      if (meta.日期) items.push(`<span>📅 日期：${escHtml(meta.日期)}</span>`);
+      if (meta.场次) items.push(`<span>📍 场次：${escHtml(meta.场次)}</span>`);
+      if (meta.讲者) items.push(`<span>🎙️ 讲者：${escHtml(meta.讲者)}</span>`);
+      if (meta.author) items.push(`<span>✍️ 作者：${escHtml(meta.author)}</span>`);
+      if (meta.source && /^https?:\/\//i.test(meta.source)) {
+        items.push(`<a href="${escHtml(meta.source)}" target="_blank" rel="noopener noreferrer">🔗 原文来源 ↗</a>`);
+      }
+      const tags = Array.isArray(meta.tags) ? meta.tags : (meta.tags ? [meta.tags] : []);
+      for (const t of tags.slice(0, 6)) items.push(`<span class="fm-tag">#${escHtml(t)}</span>`);
+      if (!items.length) {
+        els.frontmatterStrip.style.display = "none";
+        return;
+      }
+      els.frontmatterStrip.style.display = "flex";
+      els.frontmatterStrip.innerHTML = items.join("");
+    }
+
+    function renderTocAndLinks(doc) {
+      const toc = doc.toc || [];
+      if (!toc.length) {
+        els.tocContainer.innerHTML = `<div style="font-size:12px;color:var(--ink-muted);">本文暂无多级标题</div>`;
+      } else {
+        els.tocContainer.innerHTML = toc.map(item => `
+          <button type="button" class="toc-item lvl-${item.level}" data-scroll-slug="${escHtml(item.slug)}">${escHtml(item.text)}</button>
+        `).join("");
+      }
+
+      const outDocs = [];
+      const seenOut = new Set();
+      let unresolvedCount = 0;
+      for (const l of doc.outLinks || []) {
+        if (l.docId && DOC_MAP.has(l.docId) && l.docId !== doc.id) {
+          if (!seenOut.has(l.docId)) {
+            seenOut.add(l.docId);
+            outDocs.push(DOC_MAP.get(l.docId));
+          }
+        } else if (!l.docId) {
+          unresolvedCount++;
+        }
+      }
+      const backDocs = doc.backlinks || [];
+
+      els.outlinksTitle.textContent = `引用笔记 (${outDocs.length})`;
+      els.rightOutlinks.innerHTML = outDocs.length
+        ? outDocs.slice(0, 14).map(d => `<button type="button" class="mini-link-btn" data-doc-id="${escHtml(d.id)}"><span>↗</span><span>${escHtml(d.title)}</span></button>`).join("")
+        : `<div style="font-size:12px;color:var(--ink-muted);">无已收录出链</div>`;
+
+      els.backlinksTitle.textContent = `被引用 / 反链 (${backDocs.length})`;
+      els.rightBacklinks.innerHTML = backDocs.length
+        ? backDocs.slice(0, 14).map(b => `<button type="button" class="mini-link-btn" data-doc-id="${escHtml(b.id)}"><span>↙</span><span>${b.isStarred ? "★ " : ""}${escHtml(b.title)}</span></button>`).join("")
+        : `<div style="font-size:12px;color:var(--ink-muted);">暂无反向引用</div>`;
+
+      const outHtml = outDocs.length
+        ? outDocs.map(d => `<button type="button" class="link-card-btn" data-doc-id="${escHtml(d.id)}"><span class="link-card-title">${d.isStarred ? "★ " : ""}${escHtml(d.title)}</span><span class="link-card-path">${escHtml(d.relPath)}</span></button>`).join("")
+        : `<div style="font-size:13px;color:var(--ink-muted);">本文没有指向库内其他卡片的出链${unresolvedCount ? `（含 ${unresolvedCount} 个外部/待补充双链）` : ""}。</div>`;
+
+      const backHtml = backDocs.length
+        ? backDocs.map(b => `<button type="button" class="link-card-btn" data-doc-id="${escHtml(b.id)}"><span class="link-card-title">${b.isStarred ? "★ " : ""}${escHtml(b.title)}</span><span class="link-card-path">${escHtml(b.relPath)}</span></button>`).join("")
+        : `<div style="font-size:13px;color:var(--ink-muted);">暂无其他卡片引用本篇。</div>`;
+
+      els.graphFooter.innerHTML = `
+        <div class="graph-card">
+          <h4><span>↗ 本文引用笔记</span><span class="count-badge">${outDocs.length}</span></h4>
+          <div class="link-list">${outHtml}</div>
+        </div>
+        <div class="graph-card">
+          <h4><span>↙ 反向链接（谁引用了本文）</span><span class="count-badge">${backDocs.length}</span></h4>
+          <div class="link-list">${backHtml}</div>
+        </div>
+      `;
+    }
+
+    const encBlobUrlCache = new Map();
+
+    async function hydrateEncryptedImages(container) {
+      if (!state.isOnlineVault || !state.vaultCtx?.aesKey || !container) return;
+      const imgs = container.querySelectorAll("img[data-enc-asset]");
+      for (const img of imgs) {
+        const encUrl = img.getAttribute("data-enc-asset");
+        if (!encUrl || img.dataset.encLoaded === "1") continue;
+        img.dataset.encLoaded = "1";
+        const cached = encBlobUrlCache.get(encUrl);
+        if (cached) {
+          img.src = cached;
+          img.dataset.lightboxSrc = cached;
+          continue;
+        }
+        (async () => {
+          try {
+            const resp = await fetch(encUrl, { cache: "force-cache" });
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            const buf = await resp.arrayBuffer();
+            if (buf.byteLength <= 28) throw new Error("Invalid encrypted asset");
+            const iv = new Uint8Array(buf, 0, 12);
+            const cipher = buf.slice(12);
+            const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv }, state.vaultCtx.aesKey, cipher);
+            const blobUrl = URL.createObjectURL(new Blob([plain], { type: "image/webp" }));
+            encBlobUrlCache.set(encUrl, blobUrl);
+            img.src = blobUrl;
+            img.dataset.lightboxSrc = blobUrl;
+          } catch (_) {
+            const name = img.getAttribute("alt") || "配图";
+            const wrap = img.closest(".md-img-wrap");
+            if (wrap) {
+              const card = document.createElement("span");
+              card.className = "md-img-card";
+              card.textContent = `🖼️ 加密配图加载失败：${name}`;
+              wrap.replaceWith(card);
+            }
+          }
+        })();
+      }
+    }
+
+    async function checkLiveSync(doc, manualTrigger = false) {
+      const seq = ++state.syncSeq;
+      if (state.isOnlineVault) {
+        state.syncInfo = { mode: "online", text: "🔐 在线加密库 · 已解锁", ok: true };
+        renderMetaBar(doc);
+        return;
+      }
+      if (window.location.protocol === "file:") {
+        state.syncInfo = { mode: "offline", text: "📄 离线包模式 · Git自动刷新", ok: false };
+        renderMetaBar(doc);
+        return;
+      }
+      if (window.origin === "null") {
+        state.syncInfo = { mode: "sandbox", text: "📄 预览沙盒快照 · Git自动刷新", ok: false };
+        renderMetaBar(doc);
+        return;
+      }
+
+      if (manualTrigger) {
+        state.syncInfo = { mode: "checking", text: "⏳ 比对磁盘中...", ok: false };
+        renderMetaBar(doc);
+      }
+
+      const absPath = `${DATA.kbRoot}/${doc.relPath}`;
+      const candidates = [
+        `/api/file?path=${encodeURIComponent(absPath)}`,
+        `../${doc.relPath.split("/").map(encodeURIComponent).join("/")}`
+      ];
+
+      for (const url of candidates) {
+        try {
+          const resp = await fetch(url, { cache: "no-store" });
+          if (!resp.ok) continue;
+          const rawLive = await resp.text();
+          if (seq !== state.syncSeq || state.activeDocId !== doc.id) return;
+          const { meta, body } = parseLiveFrontmatter(rawLive);
+          const norm = (s) => String(s || "").replace(/\r\n/g, "\n").trim();
+          if (norm(body) !== norm(doc.content)) {
+            doc.content = body;
+            doc._searchBody = body.toLowerCase();
+            doc.meta = Object.keys(meta).length ? meta : doc.meta;
+            doc.toc = extractLiveToc(body);
+            els.articleContent.innerHTML = renderMarkdown(doc.content, doc);
+            hydrateEncryptedImages(els.articleContent);
+            renderFrontmatter(doc.meta);
+            renderTocAndLinks(doc);
+            state.syncInfo = { mode: "live", text: "🟢 已与 ~/kb 磁盘同步（已热更新）", ok: true };
+          } else {
+            state.syncInfo = { mode: "live", text: "🟢 已与 ~/kb 磁盘同步（刚刚检查）", ok: true };
+          }
+          renderMetaBar(doc);
+          return;
+        } catch (_) {}
+      }
+
+      if (seq !== state.syncSeq || state.activeDocId !== doc.id) return;
+      state.syncInfo = { mode: "sandbox", text: "📄 离线包快照 · Git自动刷新", ok: false };
+      renderMetaBar(doc);
+    }
+
+    async function openDoc(docId, anchorSlug = "") {
+      const doc = DOC_MAP.get(docId);
+      if (!doc) return;
+      const mySeq = ++state.openSeq;
+      state.activeDocId = doc.id;
+      expandAncestorsForDoc(doc);
+
+      const crumbs = doc.relPath.split("/");
+      els.breadcrumb.innerHTML = crumbs.map((seg, idx) =>
+        (idx > 0 ? '<span class="breadcrumb-sep">/</span>' : "") +
+        `<span${idx === crumbs.length - 1 ? ' style="color:var(--ink-primary);font-weight:600;"' : ""}>${escHtml(seg)}</span>`
+      ).join("");
+
+      els.topbarDocTitle.textContent = doc.title;
+      document.title = `${doc.title} · ~/kb 知识库`;
+
+      if (state.isOnlineVault) {
+        state.syncInfo = { mode: "online", text: "🔐 在线加密库 · 已解锁", ok: true };
+      } else if (window.location.protocol === "file:") {
+        state.syncInfo = { mode: "offline", text: "📄 离线包模式 · Git自动刷新", ok: false };
+      } else if (window.origin === "null") {
+        state.syncInfo = { mode: "sandbox", text: "📄 预览沙盒快照 · Git自动刷新", ok: false };
+      } else {
+        state.syncInfo = { mode: "checking", text: "⏳ 检查 ~/kb 磁盘同步...", ok: false };
+      }
+      renderMetaBar(doc);
+      renderFrontmatter(doc.meta);
+      renderTocAndLinks(doc);
+      renderTree();
+
+      try { window.location.hash = `doc=${doc.id}`; } catch (_) {}
+
+      if (doc.shard && !doc.content) {
+        els.articleContent.innerHTML = `<div class="callout callout-note"><div class="callout-title">⏳ 正在按需加载正文分片</div><div class="callout-body">正在加载 <strong>${escHtml(doc.section)}</strong> 中的《${escHtml(doc.title)}》...</div></div>`;
+        try {
+          await ensureShardLoaded(doc.shard);
+        } catch (err) {
+          if (mySeq !== state.openSeq || state.activeDocId !== doc.id) return;
+          els.articleContent.innerHTML = `<div class="callout callout-caution"><div class="callout-title">⚠️ 分片加载失败</div><div class="callout-body">${escHtml(err?.message || "请检查网络或刷新重试")}</div></div>`;
+          return;
+        }
+        if (mySeq !== state.openSeq || state.activeDocId !== doc.id) return;
+      }
+
+      els.articleContent.innerHTML = renderMarkdown(doc.content, doc);
+      hydrateEncryptedImages(els.articleContent);
+
+      if (anchorSlug) {
+        const targetSlug = slugifyHeading(anchorSlug);
+        requestAnimationFrame(() => {
+          const targetEl = document.getElementById(targetSlug) || document.querySelector(`[data-toc-slug="${CSS.escape(targetSlug)}"]`);
+          if (targetEl) targetEl.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      } else {
+        window.scrollTo({ top: 0, behavior: "auto" });
+      }
+
+      checkLiveSync(doc, false);
+    }
+
+    async function selectTopic(topicSlug, flagshipRel) {
+      state.activeTopic = topicSlug;
+      state.filterTopicOnly = topicSlug !== "nav";
+      state.sidebarQuery = "";
+      els.sidebarSearchInput.value = "";
+
+      for (const btn of els.topicRibbon.querySelectorAll(".topic-pill")) {
+        btn.classList.toggle("active", btn.dataset.topic === topicSlug);
+      }
+
+      let targetDoc = REL_MAP.get(flagshipRel);
+      if (!targetDoc) {
+        targetDoc = DATA.docs.find(d => (d.topics || []).includes(topicSlug)) || DATA.docs[0];
+      }
+      if (targetDoc) {
+        await openDoc(targetDoc.id);
+        requestAnimationFrame(() => {
+          const activeBtn = els.treeContainer.querySelector(".tree-doc-btn.active");
+          if (activeBtn) activeBtn.scrollIntoView({ block: "nearest" });
+          else els.treeContainer.scrollTop = 0;
+        });
+      } else {
+        renderTree();
+        els.treeContainer.scrollTop = 0;
+      }
+    }
+
+    let modalBgLoadSeq = 0;
+    function updateModalShardStatus() {
+      const loaded = [];
+      if (hydratedShards.has("articles")) loaded.push("原文");
+      if (hydratedShards.has("talks")) loaded.push("分享");
+      if (hydratedShards.has("chat")) loaded.push("群聊");
+      if (!state.includeChatTalks) {
+        els.modalShardStatus.textContent = "已隐藏群聊与听写 · 仅搜精选与原文";
+      } else if (loaded.length === 3) {
+        els.modalShardStatus.textContent = `已加载全库 ${DATA.totalDocs} 篇完整正文`;
+      } else {
+        els.modalShardStatus.textContent = "检索全库索引（输入 >=2 字自动补全分片全文）";
+      }
+    }
+
+    function maybePreloadShardsForSearch(q) {
+      if (q.length < 2) return;
+      const needed = ["articles"];
+      if (state.includeChatTalks) needed.push("talks", "chat");
+      const missing = needed.filter(s => !hydratedShards.has(s));
+      if (!missing.length) return;
+      const mySeq = ++modalBgLoadSeq;
+      els.modalShardStatus.textContent = `⏳ 正在加载${state.includeChatTalks ? "全库/群聊" : "原文"}分片全文...`;
+      Promise.allSettled(missing.map(s => ensureShardLoaded(s))).then(() => {
+        updateModalShardStatus();
+        if (mySeq === modalBgLoadSeq && els.searchModal.classList.contains("open") && els.modalSearchInput.value.trim() === q) {
+          renderModalResults(q);
+        }
+      });
+    }
+
+    function openSearchModal(initialQuery = "") {
+      els.searchModal.classList.add("open");
+      els.modalSearchInput.value = initialQuery;
+      els.chkIncludeChatTalks.checked = state.includeChatTalks;
+      updateModalShardStatus();
+      renderModalResults(initialQuery);
+      requestAnimationFrame(() => els.modalSearchInput.focus());
+    }
+
+    function closeSearchModal() {
+      els.searchModal.classList.remove("open");
+    }
+
+    function renderModalResults(rawQuery) {
+      const q = String(rawQuery || "").trim();
+      updateModalShardStatus();
+      if (!q) {
+        const featured = DATA.docs.filter(d => d.isStarred).slice(0, 12);
+        els.modalResults.innerHTML =
+          `<div class="modal-status">🌟 推荐实战精华（输入关键词可搜全库 ${DATA.totalDocs} 篇笔记）</div>` +
+          featured.map(doc => `
+            <button type="button" class="search-hit" data-doc-id="${escHtml(doc.id)}">
+              <div class="search-hit-title">★ ${escHtml(doc.title)}</div>
+              <div class="search-hit-meta"><span>${escHtml(doc.section)}</span><span>·</span><span>${escHtml(doc.relPath)}</span></div>
+              ${doc.summary ? `<div class="search-hit-snippet">${escHtml(doc.summary)}</div>` : ""}
+            </button>
+          `).join("");
+        return;
+      }
+
+      maybePreloadShardsForSearch(q);
+      const savedFilter = state.filterTopicOnly;
+      state.filterTopicOnly = false;
+      const hits = searchDocs(q, 40, state.includeChatTalks);
+      state.filterTopicOnly = savedFilter;
+
+      if (!hits.length) {
+        els.modalResults.innerHTML = `<div class="modal-status">没有匹配「${escHtml(q)}」的文档，请换个关键词（如 GEO、外链、定价、2023年10月）。</div>`;
+        return;
+      }
+      els.modalResults.innerHTML =
+        `<div class="modal-status">命中 ${hits.length} 篇（按标题、星标实战权重与正文中标频次排序）</div>` +
+        hits.map(({ doc, snippetHtml }) => `
+          <button type="button" class="search-hit" data-doc-id="${escHtml(doc.id)}">
+            <div class="search-hit-title">${doc.isStarred ? "★ " : ""}${escHtml(doc.title)}</div>
+            <div class="search-hit-meta"><span>${escHtml(doc.section)}</span><span>·</span><span>${escHtml(doc.relPath)}</span></div>
+            <div class="search-hit-snippet">${snippetHtml}</div>
+          </button>
+        `).join("");
+    }
+
+    // Event Wiring
+    applyTheme(state.theme);
+    els.statsPill.textContent = `收录 ${DATA.totalDocs} 篇 · 更新于 ${DATA.localTime || DATA.generatedAt}`;
+
+    els.btnTheme.addEventListener("click", () => applyTheme(state.theme === "dark" ? "light" : "dark"));
+    document.getElementById("brandHome").addEventListener("click", (e) => {
+      e.preventDefault();
+      selectTopic("nav", "00-知识库总导航.md");
+    });
+
+    els.topicRibbon.addEventListener("click", (e) => {
+      const btn = e.target.closest(".topic-pill");
+      if (!btn) return;
+      selectTopic(btn.dataset.topic, btn.dataset.flagship);
+    });
+
+    els.btnResetFilter.addEventListener("click", () => {
+      state.filterTopicOnly = false;
+      state.activeTopic = "nav";
+      for (const btn of els.topicRibbon.querySelectorAll(".topic-pill")) {
+        btn.classList.toggle("active", btn.dataset.topic === "nav");
+      }
+      renderTree();
+    });
+
+    let searchTimer = null;
+    els.sidebarSearchInput.addEventListener("input", () => {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => {
+        state.sidebarQuery = els.sidebarSearchInput.value;
+        renderTree();
+      }, 80);
+    });
+    els.btnClearSidebarSearch.addEventListener("click", () => {
+      els.sidebarSearchInput.value = "";
+      state.sidebarQuery = "";
+      renderTree();
+      els.sidebarSearchInput.focus();
+    });
+
+    // Fallback card if any <img> fails to load
+    els.articleContent.addEventListener("error", (e) => {
+      const img = e.target;
+      if (!img || img.tagName !== "IMG" || !img.classList.contains("md-img")) return;
+      const wrap = img.closest(".md-img-wrap");
+      if (!wrap) return;
+      const name = img.dataset.fallbackName || img.alt || "配图";
+      const srcHint = img.dataset.fallbackSrc || "";
+      const card = document.createElement("span");
+      card.className = "md-img-card";
+      card.innerHTML = `🖼️ 原文配图：<strong>${escHtml(name)}</strong> <span style="opacity:.7;font-family:var(--font-mono);font-size:11px;">(${escHtml(srcHint)})</span>`;
+      wrap.replaceWith(card);
+    }, true);
+
+    document.addEventListener("click", (e) => {
+      const lbImg = e.target.closest("img[data-lightbox-src]");
+      if (lbImg && lbImg.dataset.lightboxSrc) {
+        openLightbox(lbImg.dataset.lightboxSrc, lbImg.dataset.lightboxAlt || lbImg.alt || "");
+        return;
+      }
+
+      const docBtn = e.target.closest("[data-doc-id]");
+      if (docBtn) {
+        e.preventDefault();
+        const targetId = docBtn.dataset.docId;
+        const anchor = docBtn.dataset.anchor || "";
+        closeSearchModal();
+        closeDrawers();
+        openDoc(targetId, anchor);
+        return;
+      }
+
+      const tocBtn = e.target.closest("[data-scroll-slug]");
+      if (tocBtn) {
+        const slug = tocBtn.dataset.scrollSlug;
+        closeDrawers();
+        const el = document.getElementById(slug) || document.querySelector(`[data-toc-slug="${CSS.escape(slug)}"]`);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        for (const b of els.tocContainer.querySelectorAll(".toc-item")) {
+          b.classList.toggle("active", b === tocBtn);
+        }
+        return;
+      }
+
+      const secBtn = e.target.closest("[data-sec-key]");
+      if (secBtn) {
+        const key = secBtn.dataset.secKey;
+        const sKey = `sec:${key}`;
+        const secObj = DATA.tree.find(s => s.key === key);
+        const currentlyOpen = state.expandedFolders.has(sKey) || (secObj && !secObj.collapsed && !state.expandedFolders.has(`closed:${key}`));
+        if (currentlyOpen) {
+          state.expandedFolders.delete(sKey);
+          state.expandedFolders.add(`closed:${key}`);
+        } else {
+          state.expandedFolders.add(sKey);
+          state.expandedFolders.delete(`closed:${key}`);
+        }
+        renderTree();
+        return;
+      }
+
+      const folderBtn = e.target.closest("[data-folder-key]");
+      if (folderBtn) {
+        const fk = folderBtn.dataset.folderKey;
+        if (state.expandedFolders.has(fk)) state.expandedFolders.delete(fk);
+        else state.expandedFolders.add(fk);
+        renderTree();
+        return;
+      }
+
+      const codeCopy = e.target.closest(".code-copy-btn");
+      if (codeCopy) {
+        const pre = codeCopy.closest(".code-block")?.querySelector("pre");
+        if (pre) {
+          copyText(pre.textContent || "");
+          codeCopy.textContent = "已复制";
+          setTimeout(() => { codeCopy.textContent = "复制"; }, 1400);
+        }
+      }
+    });
+
+    // Modals, Lightbox & Drawers
+    document.getElementById("btnOpenSearch").addEventListener("click", () => openSearchModal(els.sidebarSearchInput.value));
+    document.getElementById("btnCloseModal").addEventListener("click", closeSearchModal);
+    els.searchModal.addEventListener("click", (e) => {
+      if (e.target === els.searchModal) closeSearchModal();
+    });
+    let modalTimer = null;
+    els.modalSearchInput.addEventListener("input", () => {
+      clearTimeout(modalTimer);
+      modalTimer = setTimeout(() => renderModalResults(els.modalSearchInput.value), 60);
+    });
+    els.chkIncludeChatTalks.addEventListener("change", () => {
+      state.includeChatTalks = els.chkIncludeChatTalks.checked;
+      renderModalResults(els.modalSearchInput.value);
+    });
+
+    document.getElementById("btnCloseLightbox").addEventListener("click", closeLightbox);
+    els.lightboxModal.addEventListener("click", (e) => {
+      if (e.target === els.lightboxModal) closeLightbox();
+    });
+
+    document.getElementById("btnMobileTree").addEventListener("click", openLeftDrawer);
+    document.getElementById("btnMobileToc").addEventListener("click", openRightDrawer);
+    document.getElementById("btnCloseLeft").addEventListener("click", closeDrawers);
+    document.getElementById("btnCloseRight").addEventListener("click", closeDrawers);
+    els.drawerScrim.addEventListener("click", closeDrawers);
+
+    document.getElementById("mobTabTree").addEventListener("click", openLeftDrawer);
+    document.getElementById("mobTabGeo").addEventListener("click", () => {
+      closeDrawers();
+      selectTopic("geo-seo", "notes/GEO/AI搜索推荐机制与对比页工程化写法.md");
+    });
+    document.getElementById("mobTabSearch").addEventListener("click", () => {
+      closeDrawers();
+      openSearchModal("");
+    });
+    document.getElementById("mobTabToc").addEventListener("click", openRightDrawer);
+
+    document.addEventListener("keydown", (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        if (els.searchModal.classList.contains("open")) closeSearchModal();
+        else openSearchModal("");
+      } else if (e.key === "/" && !["INPUT", "TEXTAREA"].includes(document.activeElement?.tagName)) {
+        e.preventDefault();
+        if (window.innerWidth < 768) openSearchModal("");
+        else els.sidebarSearchInput.focus();
+      } else if (e.key === "Escape") {
+        if (els.lightboxModal.classList.contains("open")) closeLightbox();
+        else {
+          closeSearchModal();
+          closeDrawers();
+        }
+      }
+    });
+
+    // Initial Load: check URL hash or default to 00-知识库总导航.md
+    const { doc: hashDocParam } = parseHashKeyAndDoc();
+    const initialDoc =
+      (hashDocParam && DOC_MAP.get(hashDocParam)) ||
+      REL_MAP.get("00-知识库总导航.md") ||
+      REL_MAP.get("notes/GEO/AI搜索推荐机制与对比页工程化写法.md") ||
+      DATA.docs[0];
+
+    if (initialDoc) openDoc(initialDoc.id);
+  }
+
+  async function bootstrap() {
+    if (window.KB_READER_DATA && Array.isArray(window.KB_READER_DATA.docs)) {
+      bootReader(window.KB_READER_DATA, { isOnline: false });
+      return;
+    }
+    const meta = await tryFetchVaultMeta();
+    if (meta || window.KB_ONLINE_VAULT === true) {
+      if (!meta) {
+        document.getElementById("articleContent").innerHTML =
+          '<div class="callout callout-caution"><div class="callout-title">⚠️ 未加载到在线密钥元数据</div><div class="callout-body">缺少 <code>kb-vault-meta.json</code>，请检查部署包。</div></div>';
+        return;
+      }
+      await unlockVaultFlow(meta);
+      return;
+    }
+    document.getElementById("articleContent").innerHTML =
+      '<div class="callout callout-caution"><div class="callout-title">⚠️ 未加载到索引数据</div><div class="callout-body">请先运行 <code>python3 /Users/nonacosa/kb/kbtool/build_web_reader.py</code> 生成 <code>kb-reader-data.js</code>。</div></div>';
+  }
+
+  bootstrap();
+})();
+</script>
+</body>
+</html>
